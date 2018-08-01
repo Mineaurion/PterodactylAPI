@@ -1,16 +1,9 @@
 <?php
 
-/* 
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
-
 class PterodactylAPI
 {
     private $url = '';
     private $publicKey = '';
-    private $privateKey = '';
     
     
     private $methods = array(
@@ -23,29 +16,24 @@ class PterodactylAPI
     
     //Tout ce qui concerne les params et method http de l'api
     private $methodsHttp = array(
-        'listServers'   => array(
-                                'method'    => 'GET',
-                                'url'       => '/api/user'
-                            ),
         'singleServer'  => array(
                                 'method'    => 'GET',
-                                'url'       => '/api/user/server/<uuid>'
+                                'url'       => '/api/client/servers/<uuid>'
                             ),
         'powerToggles'  => array(
                                 'method'    => 'POST',
-                                'url'       => '/api/user/server/<uuid>/power'
+                                'url'       => '/api/client/servers/<uuid>/power'
                             ),
         'sendCommand'   => array(
                                 'method'    => 'POST',
-                                'url'       => '/api/user/server/<uuid>/command'
+                                'url'       => '/api/client/servers/<uuid>/command'
                             ),
     );
     
     
-    public function __construct($url, $publicKey, $privateKey) {
+    public function __construct($url, $publicKey) {
         $this->url = $url;
         $this->publicKey = $publicKey;
-        $this->privateKey = $privateKey;
         
     }
     public function __call($function, $args) {
@@ -91,7 +79,7 @@ class PterodactylAPI
             return array('success'=>false, 'errors'=>array('Invalid target URL'));  
         }
             
-        if (!$this->privateKey or !$this->publicKey){
+        if (!$this->publicKey){
             return array('success'=>false, 'errors'=>array('Invalid API keys'));
         }
         //Define url
@@ -114,10 +102,7 @@ class PterodactylAPI
                 $query .= $v;
             }
         }
-        $hmac = hash_hmac('sha256', $url.$query,$this->privateKey, true);
-        $key = $this->publicKey. '.' . base64_encode($hmac);
-
-        $ret = $this->send($url, $query, $key, $this->methodsHttp[$method]['method']);
+        $ret = $this->send($url, $query, $this->publicKey, $this->methodsHttp[$method]['method']);
         return $ret;
     }
     
@@ -145,7 +130,8 @@ class PterodactylAPI
                //CURLOPT_POSTFIELDS      => $query,
                CURLOPT_HTTPHEADER       => array(
                  "authorization: Bearer ".$key,
-                 "content-type: application/json"
+                 "content-type: application/json",
+                 "Accept: application/vnd.pterodactyl.v1+json"
                ), 
             ));
             if($httpMethod == 'POST'){
