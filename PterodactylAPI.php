@@ -1,5 +1,4 @@
 <?php
-
 class PterodactylAPI
 {
     private $url = '';
@@ -16,6 +15,10 @@ class PterodactylAPI
     
     //Tout ce qui concerne les params et method http de l'api
     private $methodsHttp = array(
+        'listServers'   => array(
+                                'method'   => 'GET',
+                                'url'      => '/api/client'
+        ),
         'singleServer'  => array(
                                 'method'    => 'GET',
                                 'url'       => '/api/client/servers/<uuid>'
@@ -85,7 +88,7 @@ class PterodactylAPI
         //Define url
         $url = $this->url . $this->methodsHttp[$method]['url'];
         //If <uuid> in this url so we replace it
-        if($params['uuid']){
+        if(array_key_exists('uuid',$params)){
           $url = str_replace('<uuid>', $params['uuid'], $url);
         }
         
